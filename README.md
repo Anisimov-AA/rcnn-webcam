@@ -12,7 +12,7 @@ python webcam_rcnn.py --iou_thresh 0.3
 python webcam_rcnn.py --proposals 50
 ```
 
-## Optimizations applied
+## Optimizations
 
 - MobileNet backbone instead of VGG16
 - Input resizing to 480px
@@ -24,26 +24,26 @@ python webcam_rcnn.py --proposals 50
 
 VGG16 vs MobileNet:
 
-- MobileNet: 59.3 FPS (smooth)
-- VGG16: 0.5 FPS (unusable)
+- MobileNet: 7.8 FPS
+- VGG16: 0.9 FPS (~8.7x slower)
 
 Score threshold:
 
-- 0.3 → 4.1 FPS (more detections, more false positives)
-- 0.5 → 4.2 FPS
-- 0.6 → 59.3 FPS (best balance)
-- 0.7 → 67.1 FPS (fewer detections)
+- 0.3 -> 8.3 FPS, more detections, more false positives
+- 0.5 -> 8.1 FPS
+- 0.6 -> 7.8 FPS (best balance)
+- 0.7 -> 8.0 FPS, fewer detections
 
 IoU (NMS):
 
-- 0.3 → 26.2 FPS (fewer overlapping boxes)
-- 0.4 → 59.3 FPS (best balance)
-- 0.6 → 247.2 FPS (more overlapping boxes kept)
+- 0.3 -> 7.8 FPS, fewer overlapping boxes
+- 0.4 -> 7.8 FPS (best balance)
+- 0.6 -> 8.0 FPS, more overlapping boxes
 
 Proposals:
 
-- 50 → 47.5 FPS
-- 100 → 59.3 FPS (best balance)
-- 300 → 3.7 FPS
+- 50 -> 8.8 FPS, slight accuracy drop
+- 100 -> 7.8 FPS (best balance)
+- 300 -> 6.1 FPS, slower
 
 Best config: score=0.6, iou=0.4, proposals=100

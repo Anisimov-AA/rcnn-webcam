@@ -124,30 +124,32 @@ print(f"\nSettings: model={args.model}, score={args.score_thresh}, "
 print("Press 'q' to quit\n")
 
 frame_count = 0
-fps_list = []
+detection_times = []
 last_results = None
 last_scale = 1.0
+smooth_fps = 0
 
 while True:
     ret, frame = cap.read()
     if not ret:
         break
 
-    start = time.time()
-
     # skip frames for speed - reuse previous detections
     if frame_count % args.skip_frames == 0:
+        start = time.time()
         last_results, last_scale = run_detection(frame)
+        elapsed = time.time() - start
+        detection_times.append(elapsed)
+
+        # smooth fps based on last 10 detections
+        recent = detection_times[-10:]
+        smooth_fps = 1.0 / (sum(recent) / len(recent))
 
     if last_results is not None:
         frame = draw_boxes(frame, last_results, last_scale)
 
-    elapsed = time.time() - start
-    fps = 1.0 / elapsed if elapsed > 0 else 0
-    fps_list.append(fps)
-
     # show fps on frame
-    cv2.putText(frame, f"FPS: {fps:.1f} [{args.model}]", (10, 30),
+    cv2.putText(frame, f"FPS: {smooth_fps:.1f} [{args.model}]", (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
     cv2.imshow("R-CNN Webcam Detection", frame)
@@ -161,7 +163,7 @@ cap.release()
 out.release()
 cv2.destroyAllWindows()
 
-avg_fps = sum(fps_list) / len(fps_list) if fps_list else 0
+avg_fps = 1.0 / (sum(detection_times) / len(detection_times)) if detection_times else 0
 print(f"\nDone! {frame_count} frames processed")
 print(f"Average FPS: {avg_fps:.1f}")
 print(f"Video saved to output.avi")
